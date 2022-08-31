@@ -15,3 +15,9 @@ export async function activateNewCard(req: Request, res: Response) {
     await cardServices.activateNewCard(cardInfo);
     res.status(200).send("Card activated!");
 }
+
+export async function lockOrUnlock(req: Request, res: Response) {
+    const cardInfo = req.body;
+    const message = await cardServices.lockOrUnlock(cardInfo);
+    res.status(200).send(message);
+}

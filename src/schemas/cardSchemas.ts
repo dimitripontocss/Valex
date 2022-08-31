@@ -10,4 +10,9 @@ export const validateNewCardSchema = joi.object({
     cardId: joi.number().required(),
     securityCode: joi.string().required().length(3),
     password: joi.string().required().length(4)
-})
+});
+
+export const lockSchema = joi.object({
+    cardId: joi.number().required(),
+    password: joi.string().required().length(4)
+});

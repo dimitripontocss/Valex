@@ -10,7 +10,7 @@ import * as employeeRepository from "../repositories/employeeRepository.js"
 export async function activateNewCard(cardInfo: any){
     const possibleCard = await cardRepository.findById(cardInfo.cardId);
     if(!possibleCard){
-        throw { name: "Not Found", message: "There is no cards with this id."}
+        throw { name: "Not Found", message: "There are no cards with this id."}
     }
     if(possibleCard.password !== null){
         throw { name: "Not Allowed", message: "Card already activated."}
@@ -26,6 +26,32 @@ export async function activateNewCard(cardInfo: any){
     await cardRepository.update(cardInfo.cardId, {password: cryptedPassword})
 
     return
+}
+
+export async function lockOrUnlock(cardInfo: any){
+    const possibleCard = await cardRepository.findById(cardInfo.cardId);
+    if(!possibleCard){
+        throw { name: "Not Found", message: "There are no cards with this id."};
+    }
+    
+    const passwordValidate = bcrypt.compareSync(cardInfo.password, possibleCard.password);
+		if(!passwordValidate){
+            throw { name: "Wrong Password", message: "Wrong password."};
+        }
+
+    
+    const expired = isExpired(possibleCard.expirationDate)
+    if(expired){
+        throw { name: "Not Found", message: "There are no cards with this id."};
+    }
+
+    if(possibleCard.isBlocked){
+        await cardRepository.update(possibleCard.id, {isBlocked: false})
+        return "Card unlocked!"
+    }else{
+        await cardRepository.update(possibleCard.id, {isBlocked: true});
+        return "Card locked!"
+    }
 }
 
 export async function createNewCard(apiKey: string, cardInfo: any){
@@ -103,4 +129,12 @@ function fakeInfoGenerator(){
         number: faker.finance.creditCardNumber(),
         securityCode: faker.finance.creditCardCVV()
     }
+}
+
+function isExpired(expirationDate:any):boolean{
+    const date = dayjs("01/"+expirationDate);
+    const today = dayjs();
+    const diff = date.diff(today);
+    if(diff > 0) return false
+    return true
 }
