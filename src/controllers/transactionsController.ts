@@ -5,5 +5,5 @@ export async function rechargeController(req: Request, res: Response) {
     const apiKey = (req.headers['x-api-key']) as string;
     const rechargeInfo = req.body;
     await recharger(apiKey, rechargeInfo);
-    res.sendStatus(200);
+    res.status(200).send("Recharge done successfuly.");
 }
