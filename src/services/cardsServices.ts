@@ -57,11 +57,11 @@ export async function lockOrUnlock(cardInfo: any){
 export async function createNewCard(apiKey: string, cardInfo: any){
     const possibleCompany = await companyRepository.findByApiKey(apiKey);
     if(!possibleCompany){
-        throw { name: "Not Found", message: "There is no companies with this api key."}
+        throw { name: "Not Found", message: "There are no companies with this api key."}
     }
     const possibleEmployee = await employeeRepository.findById(cardInfo.employeeId);
     if(!possibleEmployee){
-        throw { name: "Not Found", message: "There is no employees with this id."}
+        throw { name: "Not Found", message: "There are no employees with this id."}
     }
     
     const alreadyExistCard = await cardRepository.findByTypeAndEmployeeId(cardInfo.type,cardInfo.employeeId)
@@ -131,7 +131,7 @@ function fakeInfoGenerator(){
     }
 }
 
-function isExpired(expirationDate:any):boolean{
+export function isExpired(expirationDate:any):boolean{
     const date = dayjs("01/"+expirationDate);
     const today = dayjs();
     const diff = date.diff(today);
