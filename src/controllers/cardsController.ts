@@ -9,3 +9,9 @@ export async function createNewCard(req: Request, res: Response) {
     const result = await cardServices.createNewCard(apiKey,cardInfo);
     res.status(200).send(result);
 }
+
+export async function activateNewCard(req: Request, res: Response) {
+    const cardInfo = req.body;
+    await cardServices.activateNewCard(cardInfo);
+    res.status(200).send("Card activated!");
+}
