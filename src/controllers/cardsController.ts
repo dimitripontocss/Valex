@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import * as cardServices from "../services/cardsServices.js"
+import * as cardServices from "../services/cardsServices.js";
 
 
 export async function createNewCard(req: Request, res: Response) {
