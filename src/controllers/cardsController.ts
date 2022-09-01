@@ -27,3 +27,11 @@ export async function getCardStatus(req: Request, res: Response) {
     const result = await cardServices.getCardStatus(cardId);
     res.status(200).send(result);
 }
+
+export async function getEmployeeCards(req: Request, res: Response) {
+    const employeeId = Number(req.params.employeeId);
+    const querys = req.query;
+    console.log(querys,employeeId);
+
+    res.sendStatus(200);
+}

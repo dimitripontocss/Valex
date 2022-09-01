@@ -6,7 +6,6 @@ import * as rechargeRepository from "../repositories/rechargeRepository.js";
 import * as paymentRepository from "../repositories/paymentRepository.js";
 import * as businessRepository from "../repositories/businessRepository.js";
 
-
 import { isExpired } from "./cardsServices.js";
 
 export async function recharger(apiKey: string, rechargeInfo: any) {
@@ -18,42 +17,24 @@ export async function recharger(apiKey: string, rechargeInfo: any) {
     if(!possibleCard){
         throw { name: "Not Found", message: "There are no cards with this id."}
     }
-    if(possibleCard.isBlocked){
-        throw { name: "Blocked", message: "This card has been blocked."};
-    }
-    if(possibleCard.password === null){
-        throw { name: "Not Active", message: "Activate this card first."};
-    }
-    const expired = isExpired(possibleCard.expirationDate)
-    if(expired){
-        throw { name: "Expired", message: "This card has expired get a new one."};
-    }
-    
+    cardValidator(possibleCard);
+
     await rechargeRepository.insert(rechargeInfo);
 }
 
 export async function payment(paymentInfo: any) {
-    const possibleCard = await cardRepository.findById(paymentInfo.cardId);
-    if(!possibleCard){
-        throw { name: "Not Found", message: "There are no cards with this id."}
-    }
     const possibleBusiness = await businessRepository.findById(paymentInfo.businessId);
     if(!possibleBusiness){
+        throw { name: "Not Found", message: "There are no cards with this id."}
+    }
+    const possibleCard = await cardRepository.findById(paymentInfo.cardId);
+    if(!possibleCard){
         throw { name: "Not Found", message: "There are no cards with this id."}
     }
     if(possibleBusiness.type !== possibleCard.type){
         throw { name: "Diferent Types", message: "This bussines type is diferent from your card type, try again with a diferent card."}
     }
-    if(possibleCard.isBlocked){
-        throw { name: "Blocked", message: "This card has been blocked."};
-    }
-    if(possibleCard.password === null){
-        throw { name: "Not Active", message: "Activate this card first."};
-    }
-    const expired = isExpired(possibleCard.expirationDate)
-    if(expired){
-        throw { name: "Expired", message: "This card has expired get a new one."};
-    }
+    cardValidator(possibleCard);
     const passwordValidate = bcrypt.compareSync(paymentInfo.password, possibleCard.password);
 		if(!passwordValidate){
             throw { name: "Wrong Password", message: "Wrong password."};
@@ -66,6 +47,18 @@ export async function payment(paymentInfo: any) {
     await paymentRepository.insert(paymentInfo);
 }
 
+function cardValidator(card: any){
+    if(card.isBlocked){
+        throw { name: "Blocked", message: "This card has been blocked."};
+    }
+    if(card.password === null){
+        throw { name: "Not Active", message: "Activate this card first."};
+    }
+    const expired = isExpired(card.expirationDate)
+    if(expired){
+        throw { name: "Expired", message: "This card has expired get a new one."};
+    }
+}
 
 export async function getCardBalance(cardId:number){
     const recharges = await rechargeRepository.findByCardId(cardId);

@@ -105,9 +105,9 @@ export async function getCardStatus(cardId: number) {
 
 export async function getCardTransactions(cardId:number){
     const recharges = await rechargeRepository.findByCardId(cardId);
-    const payments = await paymentRepository.findByCardId(cardId);
+    const transactions = await paymentRepository.findByCardId(cardId);
     
-    return {transactions: payments, recharges};
+    return {transactions, recharges};
 }
 
 function dataGenerator(employeeId: number, number:string, cardholderName: string, securityCode:string, expirationDate:string,type:cardRepository.TransactionTypes){
