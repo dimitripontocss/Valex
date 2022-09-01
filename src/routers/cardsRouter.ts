@@ -13,4 +13,4 @@ cardsRouter.post("/lock-unlock", schemasMiddleware(lockSchema), lockOrUnlock);
 cardsRouter.get("/card-status/:cardId", getCardStatus);
 cardsRouter.get("/cards/:employeeId", getEmployeeCards);
 
-export default cardsRouter;
+export default cardsRouter
