@@ -21,3 +21,9 @@ export async function lockOrUnlock(req: Request, res: Response) {
     const message = await cardServices.lockOrUnlock(cardInfo);
     res.status(200).send(message);
 }
+
+export async function getCardStatus(req: Request, res: Response) {
+    const cardId = Number(req.params.cardId);
+    const result = await cardServices.getCardStatus(cardId);
+    res.status(200).send(result);
+}

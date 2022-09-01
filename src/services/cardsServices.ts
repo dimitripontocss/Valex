@@ -1,11 +1,14 @@
 import { faker } from '@faker-js/faker';
-import dayjs from 'dayjs'
+import dayjs from 'dayjs';
 import Cryptr from 'cryptr';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 
-import * as cardRepository from "../repositories/cardRepository.js"
-import * as companyRepository from "../repositories/companyRepository.js"
-import * as employeeRepository from "../repositories/employeeRepository.js"
+import * as cardRepository from "../repositories/cardRepository.js";
+import * as companyRepository from "../repositories/companyRepository.js";
+import * as employeeRepository from "../repositories/employeeRepository.js";
+import * as rechargeRepository from "../repositories/rechargeRepository.js";
+import * as paymentRepository from "../repositories/paymentRepository.js";
+import { getCardBalance } from './transactionsServices.js';
 
 export async function activateNewCard(cardInfo: any){
     const possibleCard = await cardRepository.findById(cardInfo.cardId);
@@ -37,9 +40,8 @@ export async function lockOrUnlock(cardInfo: any){
     const passwordValidate = bcrypt.compareSync(cardInfo.password, possibleCard.password);
 		if(!passwordValidate){
             throw { name: "Wrong Password", message: "Wrong password."};
-        }
+    }
 
-    
     const expired = isExpired(possibleCard.expirationDate)
     if(expired){
         throw { name: "Not Found", message: "There are no cards with this id."};
@@ -88,6 +90,24 @@ export async function createNewCard(apiKey: string, cardInfo: any){
         expirationDate,
         type: cardInfo.type
     }
+}
+
+export async function getCardStatus(cardId: number) {
+    const possibleCard = await cardRepository.findById(cardId);
+    if(!possibleCard){
+        throw { name: "Not Found", message: "There are no cards with this id."}
+    }
+    const balance = await getCardBalance(cardId);
+    const transactions = await getCardTransactions(cardId);
+
+    return {balance, ...transactions};
+}
+
+export async function getCardTransactions(cardId:number){
+    const recharges = await rechargeRepository.findByCardId(cardId);
+    const payments = await paymentRepository.findByCardId(cardId);
+    
+    return {transactions: payments, recharges};
 }
 
 function dataGenerator(employeeId: number, number:string, cardholderName: string, securityCode:string, expirationDate:string,type:cardRepository.TransactionTypes){
