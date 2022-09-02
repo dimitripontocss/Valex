@@ -14,3 +14,10 @@ export async function paymentController(req: Request, res: Response) {
     await transactions.payment(paymentInfo);
     res.status(200).send("Payment done successfuly.");
 }
+
+export async function onlinePaymentController(req: Request, res: Response) {
+    const paymentInfo = req.body;
+    await transactions.onlinePayment(paymentInfo);
+    res.status(200).send("Payment done successfuly.");
+}
+

@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import Cryptr from 'cryptr';
 
 import * as cardRepository from "../repositories/cardRepository.js";
 import * as companyRepository from "../repositories/companyRepository.js";
@@ -23,28 +24,65 @@ export async function recharger(apiKey: string, rechargeInfo: any) {
 }
 
 export async function payment(paymentInfo: any) {
-    const possibleBusiness = await businessRepository.findById(paymentInfo.businessId);
-    if(!possibleBusiness){
-        throw { name: "Not Found", message: "There are no cards with this id."}
-    }
-    const possibleCard = await cardRepository.findById(paymentInfo.cardId);
-    if(!possibleCard){
-        throw { name: "Not Found", message: "There are no cards with this id."}
-    }
-    if(possibleBusiness.type !== possibleCard.type){
-        throw { name: "Diferent Types", message: "This bussines type is diferent from your card type, try again with a diferent card."}
-    }
-    cardValidator(possibleCard);
-    const passwordValidate = bcrypt.compareSync(paymentInfo.password, possibleCard.password);
+    const validatedCard: any = await paymentValidator(paymentInfo);
+
+    const passwordValidate = bcrypt.compareSync(paymentInfo.password, validatedCard.password);
 		if(!passwordValidate){
             throw { name: "Wrong Password", message: "Wrong password."};
     }
-    const balance = await getCardBalance(possibleCard.id);
+    const balance = await getCardBalance(validatedCard.id);
     if(balance - paymentInfo.amount < 0){
         throw { name: "Insufficient Funds", message: "Insufficient funds to do this payment."};
     }
 
     await paymentRepository.insert(paymentInfo);
+}
+
+export async function onlinePayment(paymentInfo: any) {
+    const validatedCard: any = await paymentValidator(paymentInfo);
+
+    const cryptr = new Cryptr(process.env.CRYPTR_KEY);
+    const cardCVC = cryptr.decrypt(validatedCard.securityCode);
+    if(cardCVC !== paymentInfo.securityCode){
+        throw { name: "Wrong CVC", message: "The CVC informed is wrong."}
+    }
+
+    const balance = await getCardBalance(validatedCard.id);
+    if(balance - paymentInfo.amount < 0){
+        throw { name: "Insufficient Funds", message: "Insufficient funds to do this payment."};
+    }
+ 
+    const sendablePaymentInfo = {
+        cardId: validatedCard.id,
+        businessId: paymentInfo.businessId,
+        amount: paymentInfo.amount
+    }
+
+    await paymentRepository.insert(sendablePaymentInfo);
+}
+
+async function paymentValidator(paymentInfo: any){
+        const possibleBusiness = await businessRepository.findById(paymentInfo.businessId);
+        if(!possibleBusiness){
+            throw { name: "Not Found", message: "There are no businesses with this id."}
+        }
+        let possibleCard: any;
+        if(paymentInfo.number === undefined){
+            possibleCard = await cardRepository.findById(paymentInfo.cardId);
+            if(!possibleCard){
+                throw { name: "Not Found", message: "There are no cards with this id."}
+            }
+        }else{
+            possibleCard = await cardRepository.findByCardDetails(paymentInfo.number, paymentInfo.cardholderName,paymentInfo.expirationDate);
+            if(!possibleCard){
+                throw { name: "Not Found", message: "There are no cards with this id."}
+            }
+        }
+        if(possibleBusiness.type !== possibleCard.type){
+            throw { name: "Diferent Types", message: "This bussines type is diferent from your card type, try again with a diferent card."}
+        }
+        cardValidator(possibleCard);
+        return possibleCard;    
 }
 
 function cardValidator(card: any){
