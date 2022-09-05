@@ -1,4 +1,4 @@
-*Criação de cartao:* 
+*Criação de cartão:* 
 ROTA: POST -> "https://valexback.herokuapp.com/card" 
 Header
 Com x-api-key
@@ -9,7 +9,7 @@ Body
 }
 
 
-*Ativação de cartao:* 
+*Ativação de cartão:* 
 ROTA: POST -> "https://valexback.herokuapp.com/activate-card" 
 Body
 {
@@ -19,7 +19,7 @@ Body
 }
 
 
-*Bloqueio ou desbloqueio de cartao:* 
+*Bloqueio ou desbloqueio de cartão:* 
 ROTA: POST -> "https://valexback.herokuapp.com/lock-unlock" 
 Body
 {
@@ -28,12 +28,12 @@ Body
 }
 
 
-*Pegar o status do cartao:* 
+*Pegar o status do cartão:* 
 ROTA: GET -> "https://valexback.herokuapp.com/card-status/cardId" 
 Mandar Params com cardId
 
 
-*Recarga de cartao:* 
+*Recarga de cartão:* 
 ROTA: POST -> "https://valexback.herokuapp.com/recharge" 
 Header
 Com x-api-key
